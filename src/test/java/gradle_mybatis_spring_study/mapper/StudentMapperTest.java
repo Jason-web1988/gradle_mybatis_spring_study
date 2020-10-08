@@ -60,4 +60,6 @@ public class StudentMapperTest {
 		list.stream().forEach(System.out::println);
 	}
 	
+	
+	
 }

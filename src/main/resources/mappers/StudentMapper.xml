@@ -41,4 +41,22 @@
 		SELECT STUD_ID, NAME, EMAIL, PHONE, DOB 
 	FROM STUDENTS 
 	</select>
+	
+	<!-- insert -->
+	<insert id="insertStudent" parameterType="Student">
+		INSERT INTO STUDENTS(STUD_ID, NAME, EMAIL, PHONE, DOB)
+		VALUES(#{studId}, #{name}, #{email}, #{phone}, #{dob})
+	</insert>
+	
+	<!-- delete -->
+	<delete id="deleteStudent" parameterType="int">
+	delete from students where stud_id=#{studId}
+	</delete>
+	
+	<!-- update -->
+	<update id="updateStudent" parameterType="Student">
+		update students
+		set name=#{name}, email=#{email}, phone=#{phone}, dob=#{dob}
+		where stud_id = #{studId}
+	</update>
 </mapper>

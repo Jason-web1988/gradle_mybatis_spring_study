@@ -13,6 +13,10 @@ public interface StudentMapper {
 	
 	//XML 이용
 	List<Student> selectStudentByAll();
-
 	
+	int insertStudent(Student student);
+	
+	int deleteStudent(int id);
+	
+	int updateStudent(Student student);
 }

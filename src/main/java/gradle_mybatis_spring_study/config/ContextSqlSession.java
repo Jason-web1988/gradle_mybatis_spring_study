@@ -14,15 +14,17 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@MapperScan(basePackages = {"gradle_mybatis_spring_study.mapper"})
 public class ContextSqlSession {
    @Autowired
    private ApplicationContext applicationContext;
+   
    @Bean
    public SqlSessionFactoryBean sqlSessionFactoryBean(DataSource dataSource) throws IOException {
       SqlSessionFactoryBean factoryBean = new SqlSessionFactoryBean();
       factoryBean.setDataSource(dataSource);
       factoryBean.setConfigLocation(applicationContext.getResource("classpath:/mybatis-config.xml"));
-//      factoryBean.setMapperLocations(applicationContext.getResources("classpath:/mappers/*Mapper.xml"));
+      factoryBean.setMapperLocations(applicationContext.getResources("classpath:/mappers/*Mapper.xml"));
       
       return factoryBean;
    }

@@ -1,5 +1,7 @@
 package gradle_mybatis_spring_study.mapper;
 
+import java.util.List;
+
 import gradle_mybatis_spring_study.dto.Student;
 
 public interface StudentMapper {
@@ -8,6 +10,9 @@ public interface StudentMapper {
 	
 	//ResultMap 이용
 	Student selectStudentByNoWithResultMap(Student student);
+	
+	//XML 이용
+	List<Student> selectStudentByAll();
 
 	
 }

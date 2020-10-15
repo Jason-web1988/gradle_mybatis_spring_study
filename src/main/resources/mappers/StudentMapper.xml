@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="gradle_mybatis_spring_study.mapper.StudentMapper">
 	<sql id="selectSQL">
-		SELECT STUD_ID, NAME, EMAIL, PHONE, DOB FROM STUDENTS
+		SELECT STUD_ID, NAME, EMAIL, PHONE, DOB, GENDER FROM STUDENTS
 	</sql>
 	
 	<sql id="whereSQL">
@@ -13,13 +13,6 @@
 		</where>
 	</sql>
 	
-	
-	<!-- TypeHandler 이용 -->
-	<select id="selectStudentByNo" parameterType="Student" resultType="Student">
-		<include refid="selectSQL"/>
-		<include refid="whereSQL"/>
-	</select>
-	
 	<!-- ResultMap 이용 -->
 	<resultMap type="Student" id="stdResult">
 		<id column="stud_id" property="studId"/>
@@ -27,6 +20,28 @@
 		<result column="m" property="phone.stateCode"/>
 		<result column="l" property="phone.number"/>
 	</resultMap>
+	
+	<!-- 결과매핑 -->
+	<resultMap type="Student" id="StudentResult">
+		<id column="stud_id" property="studId"/>
+		<result column="name" property="name"/>
+		<result column="email" property="email"/>
+		<result column="phone" property="phone"/>
+		<result column="dob" property="dob"/>
+	</resultMap>
+	
+	<!-- 내포된 결과매핑(ResultMap)을 사용한 일대일 매핑 -->
+	<resultMap id="StudentAssociation" type="Student" extends="StudentResult">
+		<association property="address" resultMap="gradle_mybatis_spring_study.mapper.AddressMapper.AddressResult"/>
+	</resultMap>
+	
+	<!-- 1.TypeHandler 이용 -->
+	<select id="selectStudentByNo" parameterType="Student" resultType="Student">
+		<include refid="selectSQL"/>
+		<include refid="whereSQL"/>
+	</select>
+	
+	<!-- 2.ResultMap -->
 	<select id="selectStudentByNoWithResultMap" parameterType="Student" resultMap="stdResult">
 	select stud_id, name, email, dob,
 		substr(phone, 1, 3) as f, 
@@ -36,27 +51,98 @@
 	where stud_id= #{studId}
 	</select>
 	
-	<!-- XML 이용 -->
+	<!-- 3.HashMap -->
+	<select id="selectStudentByAllForHashMap" resultType="map">
+		<include refid="selectSQL"/>
+	</select>	
+	
+	<!-- 4.ResultMap -->
+	<select id="selectStudentByAllForResultMap" resultMap="StudentResult">
+		<include refid="selectSQL"/>
+	</select>
+		
+	<!-- 5.XML 이용 -->
 	<select id="selectStudentByAll" resultType="Student">
-		SELECT STUD_ID, NAME, EMAIL, PHONE, DOB 
-	FROM STUDENTS 
+		<include refid="selectSQL"/>
 	</select>
 	
-	<!-- insert -->
+
+	
+	<!-- 4.insert -->
 	<insert id="insertStudent" parameterType="Student">
 		INSERT INTO STUDENTS(STUD_ID, NAME, EMAIL, PHONE, DOB)
 		VALUES(#{studId}, #{name}, #{email}, #{phone}, #{dob})
 	</insert>
 	
-	<!-- delete -->
+	<!-- 5.delete -->
 	<delete id="deleteStudent" parameterType="int">
 	delete from students where stud_id=#{studId}
 	</delete>
 	
-	<!-- update -->
+	<!-- 6.update -->
 	<update id="updateStudent" parameterType="Student">
 		update students
 		set name=#{name}, email=#{email}, phone=#{phone}, dob=#{dob}
 		where stud_id = #{studId}
+	</update>
+	
+	
+	<select id="selectStudentByNoAssociation" parameterType="Student" resultMap="StudentAssociation">
+	SELECT STUD_ID, NAME, EMAIL, PHONE, DOB, A.ADDR_ID, STREET, CITY, STATE, ZIP, COUNTRY
+		FROM STUDENTS S JOIN ADDRESSES A ON S.ADDR_ID=A.ADDR_ID
+		WHERE STUD_ID = #{studId}
+	</select>
+	
+	<!-- 7.enum 타입 다루기 -->
+	<insert id="insertEnumStudent" parameterType="Student">
+		insert into students(stud_id, name, email,phone, dob, gender) 
+		values(#{studId}, #{name}, #{email}, #{phone}, #{dob}, #{gender})
+	</insert>
+	
+	
+	<!-- 여러 개의 입력 파라미터 전달 -->
+	<sql id="selectAddGenderSQL">
+		SELECT STUD_ID, NAME, EMAIL, DOB, PHONE, GENDER 
+		  FROM STUDENTS
+	</sql>
+	<sql id="where_name_email">
+		<where>
+			<if test="name != null">
+				name = #{name}
+			</if>
+			<if test="email != null">
+				AND email = #{email}
+			</if>
+		</where>
+	</sql>
+	
+	<resultMap type="Student" id="StudentGenderResult" extends="StudentResult">
+		<result property="gender" column="gender"/>
+	</resultMap>
+	
+	<select id="selectStudentByMap" parameterType="map" resultMap="StudentGenderResult">
+		<include refid="selectSQL"/>
+		<include refid="where_name_email"/>
+	</select>
+	<select id="selectAllStudentByMap" parameterType="map" resultMap="StudentGenderResult">
+		<include refid="selectAddGenderSQL"/>
+		<include refid="where_name_email"></include>
+	</select>
+	
+	<!-- ResultSet 처리방식의 재정의 -->
+	<select id="selectStudentForMap" parameterType="int" resultMap="StudentGenderResult">
+		<include refid="selectSQL"/>
+		<include refid="whereSQL"/>
+	</select>
+	
+	<update id="updateSetStudent" parameterType="Student">
+		update students
+		<set>
+			<if test="name != null">name=#{name},</if>
+			<if test="email != null">email=#{email},</if>
+			<if test="phone != null">phone=#{phone},</if>
+			<if test="dob != null">dob=#{dob},</if>
+		</set>
+		<include refid="whereSQL"></include>
 	</update>
 </mapper>
